@@ -1,0 +1,163 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "email": "demo@wellhaven.com",
+      "password": "password123",
+      "name": "Demo User",
+      "createdAt": "2023-04-27T00:00:00.000Z"
+    }
+  ],
+  "profiles": [
+    {
+      "id": 1,
+      "userId": 1,
+      "name": "Demo User",
+      "age": 30,
+      "gender": "prefer-not-to-say",
+      "bio": "I'm on a journey to improve my mental wellbeing.",
+      "goals": "Reduce stress and improve sleep quality",
+      "createdAt": "2023-04-27T00:00:00.000Z",
+      "updatedAt": "2023-04-27T00:00:00.000Z"
+    }
+  ],
+  "assessments": [
+    {
+      "id": 1,
+      "userId": 1,
+      "type": "initial",
+      "questions": [
+        {
+          "question": "What's your health goal for today?",
+          "answer": "I want to reduce stress"
+        },
+        {
+          "question": "How would you rate your overall mental health?",
+          "answer": "Good"
+        },
+        {
+          "question": "How often do you feel stressed or anxious?",
+          "answer": "Sometimes"
+        },
+        {
+          "question": "How well do you sleep at night?",
+          "answer": "Average"
+        },
+        {
+          "question": "How would you describe your energy levels?",
+          "answer": "Moderate"
+        }
+      ],
+      "score": 65,
+      "summary": "Your results indicate moderate stress levels with good coping mechanisms.",
+      "recommendations": [
+        "Try daily breathing exercises",
+        "Consider a regular sleep schedule",
+        "Practice mindfulness for 10 minutes daily"
+      ],
+      "createdAt": "2023-04-27T00:00:00.000Z"
+    }
+  ],
+  "moods": [
+    {
+      "id": 1,
+      "userId": 1,
+      "mood": "Happy",
+      "intensity": 4,
+      "note": "Had a great day at work",
+      "factors": ["Good sleep", "Productive day"],
+      "createdAt": "2023-04-27T10:30:00.000Z"
+    },
+    {
+      "id": 2,
+      "userId": 1,
+      "mood": "Calm",
+      "intensity": 3,
+      "note": "Relaxing weekend",
+      "factors": ["Time with family", "Outdoor activities"],
+      "createdAt": "2023-04-26T14:15:00.000Z"
+    },
+    {
+      "id": 3,
+      "userId": 1,
+      "mood": "Anxious",
+      "intensity": 4,
+      "note": "Worried about upcoming presentation",
+      "factors": ["Work stress", "Poor sleep"],
+      "createdAt": "2023-04-25T09:45:00.000Z"
+    }
+  ],
+  "resources": [
+    {
+      "id": 1,
+      "title": "Understanding Anxiety Triggers",
+      "type": "article",
+      "category": "Anxiety",
+      "description": "Learn how to identify and manage common triggers that can cause anxiety in everyday situations.",
+      "content": "Anxiety triggers are external events or circumstances that provoke uncomfortable anxiety-related symptoms. Common triggers include work stress, financial worries, conflict, and health concerns. Identifying your personal triggers is the first step to managing anxiety effectively...",
+      "duration": "5 min read",
+      "createdAt": "2023-04-20T00:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "title": "5-Minute Breathing Exercise",
+      "type": "exercise",
+      "category": "Stress Management",
+      "description": "A quick breathing exercise to help reduce stress and anxiety in the moment.",
+      "content": "This breathing exercise uses the 4-4-6-2 technique, which can help reduce stress and anxiety, lower heart rate and blood pressure, improve focus and concentration, and promote relaxation and calmness...",
+      "duration": "5 min",
+      "createdAt": "2023-04-18T00:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "title": "Mindfulness Basics",
+      "type": "article",
+      "category": "Mindfulness",
+      "description": "Learn the fundamentals of mindfulness and how to incorporate it into your daily routine.",
+      "content": "Mindfulness is the practice of purposely focusing your attention on the present moment—and accepting it without judgment. It involves being aware of your thoughts, feelings, bodily sensations, and surrounding environment...",
+      "duration": "7 min read",
+      "createdAt": "2023-04-15T00:00:00.000Z"
+    }
+  ],
+  "therapyMessages": [
+    {
+      "id": 1,
+      "userId": 1,
+      "role": "assistant",
+      "content": "Hello! I'm your AI therapy assistant. How are you feeling today?",
+      "timestamp": "2023-04-27T10:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "userId": 1,
+      "role": "user",
+      "content": "I'm feeling a bit anxious about a presentation tomorrow.",
+      "timestamp": "2023-04-27T10:01:00.000Z"
+    },
+    {
+      "id": 3,
+      "userId": 1,
+      "role": "assistant",
+      "content": "It's completely normal to feel anxious before a presentation. Would you like to talk about some strategies that might help you manage this anxiety?",
+      "timestamp": "2023-04-27T10:01:30.000Z"
+    }
+  ],
+  "settings": [
+    {
+      "id": 1,
+      "userId": 1,
+      "theme": "light",
+      "notifications": {
+        "dailyReminders": true,
+        "weeklyReports": true,
+        "assessmentReminders": true,
+        "tips": true,
+        "emailNotifications": false
+      },
+      "privacy": {
+        "dataSharing": false
+      },
+      "updatedAt": "2023-04-27T00:00:00.000Z"
+    }
+  ]
+}
