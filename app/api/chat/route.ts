@@ -1,149 +1,91 @@
-import { currentUser } from "@clerk/nextjs/server";
-import { AzureOpenAI } from "openai";
-import { prisma } from "@/lib/prisma";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
+import { auth } from "@clerk/nextjs/server";
+import { generateChatResponse } from "./azure-openai";
 
-export async function POST(request: NextRequest) {
+const prisma = new PrismaClient();
+
+export async function POST(req: NextRequest) {
 	try {
-		// 1. Authenticate user with Clerk
-		const user = await currentUser();
-		if (!user) {
-			return new Response(JSON.stringify({ error: "Unauthorized" }), {
-				status: 401,
-				headers: { "Content-Type": "application/json" },
-			});
+		const { userId } = await auth();
+		if (!userId) {
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
-		// 2. Parse the request body
-		const body = await request.json();
-		const { messages, chatId } = body;
+		const { content, chatSessionId } = await req.json();
 
-		// 3. Find user in your database
-		let dbUser = await prisma.user.findUnique({
-			where: { id: user.id },
-		});
-
-		if (!dbUser) {
-			return new Response(JSON.stringify({ error: "Unauthorized" }), {
-				status: 401,
-				headers: { "Content-Type": "application/json" },
-			});
-		}
-
-		// 4. Get or create chat if chatId is provided
-		let chat;
-		if (chatId) {
-			chat = await prisma.chatSession.findUnique({
-				where: {
-					id: chatId,
-					userId: dbUser.id,
-				},
+		// Find or create a chat session
+		let chatSession;
+		if (chatSessionId) {
+			chatSession = await prisma.chatSession.findUnique({
+				where: { id: chatSessionId },
+				include: { messages: true },
 			});
 
-			if (!chat) {
-				return new Response(JSON.stringify({ error: "Chat not found" }), {
-					status: 404,
-					headers: { "Content-Type": "application/json" },
-				});
+			if (!chatSession || chatSession.userId !== userId) {
+				return NextResponse.json(
+					{ error: "Chat session not found" },
+					{ status: 404 },
+				);
 			}
 		} else {
-			// Create a new chat with a default name (can be updated later)
-			const firstUserMessage =
-				messages.find((msg: any) => msg.role === "user")?.content ||
-				"New conversation";
-			const chatName =
-				firstUserMessage.length > 30
-					? `${firstUserMessage.substring(0, 30)}...`
-					: firstUserMessage;
-
-			chat = await prisma.chatSession.create({
+			// Create a new chat session
+			chatSession = await prisma.chatSession.create({
 				data: {
-					name: chatName,
-					userId: dbUser.id,
+					name: "New Conversation",
+					userId,
+					messages: {
+						create: [],
+					},
 				},
+				include: { messages: true },
 			});
 		}
 
-		// 5. Save user message to database
-		const lastUserMessage = messages.findLast(
-			(msg: any) => msg.role === "user",
-		);
-		if (lastUserMessage) {
-			await prisma.chatMessage.create({
-				data: {
-					content: lastUserMessage.content,
-					isFromUser: true,
-					chatSessionId: chat.id,
-				},
-			});
-		}
-
-		const apiKey = process.env.AZURE_OPENAI_API_KEY;
-		const endpoint = process.env.AZURE_OPENAI_ENDPOINT;
-		const deploymentName = "gpt-35-turbo";
-		const apiVersion = "2024-10-21";
-
-		const client = new AzureOpenAI({
-			apiKey: new AzureKeyCredential(apiKey),
-			endpoint,
-			apiVersion,
-			deployment: deploymentName,
+		// Add the user message to the database
+		const userMessage = await prisma.chatMessage.create({
+			data: {
+				content,
+				isFromUser: true,
+				chatSessionId: chatSession.id,
+			},
 		});
 
-		// 7. Format messages for the API
-		const formattedMessages = messages.map((msg: any) => ({
-			role: msg.role,
+		// Get all messages in the conversation to maintain context
+		const allMessages = await prisma.chatMessage.findMany({
+			where: { chatSessionId: chatSession.id },
+			orderBy: { createdAt: "asc" },
+		});
+
+		// Format messages for the OpenAI API
+		const formattedMessages = allMessages.map((msg) => ({
+			role: msg.isFromUser ? "user" : "assistant",
 			content: msg.content,
 		}));
 
-		// 8. Create a streaming response
-		const stream = await client.chat.completions.create({
-			model: deploymentName, // This is typically required but may be ignored when deployment is specified
-			messages: formattedMessages,
-			max_tokens: 1000,
-			stream: true,
-		});
+		// Generate AI response
+		const aiResponseContent = await generateChatResponse(formattedMessages);
 
-		// For streaming, we need to construct a readable stream
-		const encoder = new TextEncoder();
-
-		// This will accumulate the complete response
-		let fullResponse = "";
-
-		const readableStream = new ReadableStream({
-			async start(controller) {
-				for await (const chunk of stream) {
-					const content = chunk.choices[0]?.delta?.content || "";
-					if (content) {
-						controller.enqueue(encoder.encode(content));
-						fullResponse += content;
-					}
-				}
-				controller.close();
-
-				// Save the complete response to database after streaming is done
-				await prisma.chatMessage.create({
-					data: {
-						content: fullResponse,
-						isFromUser: false,
-						chatSessionId: chat.id,
-					},
-				});
+		// Save AI response to database
+		const aiMessage = await prisma.chatMessage.create({
+			data: {
+				content:
+					aiResponseContent || "I'm sorry, I couldn't generate a response.",
+				isFromUser: false,
+				chatSessionId: chatSession.id,
 			},
 		});
 
-		// Return the streaming response with chat ID in headers
-		return new StreamingTextResponse(readableStream, {
-			headers: { "X-Chat-Id": chat.id },
+		return NextResponse.json({
+			userMessage,
+			aiMessage,
+			chatSessionId: chatSession.id,
 		});
-	} catch (error: any) {
-		console.error("Chat completion error:", error);
-		return new Response(
-			JSON.stringify({ error: error.message || "Internal server error" }),
-			{
-				status: 500,
-				headers: { "Content-Type": "application/json" },
-			},
+	} catch (error) {
+		console.error("Error processing chat:", error);
+		return NextResponse.json(
+			{ error: "Internal server error" },
+			{ status: 500 },
 		);
 	}
 }

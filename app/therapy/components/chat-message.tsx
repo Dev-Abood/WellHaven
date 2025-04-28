@@ -21,7 +21,7 @@ export default function ChatMessage({ message }: { message: Message }) {
 			{isAssistant && (
 				<div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mr-3 flex-shrink-0">
 					<Image
-						src="/placeholder.svg?height=40&width=40"
+						src="/avatar.png"
 						alt="Assistant"
 						width={24}
 						height={24}
@@ -46,7 +46,7 @@ export default function ChatMessage({ message }: { message: Message }) {
 			{!isAssistant && (
 				<div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center ml-3 flex-shrink-0">
 					<Image
-						src="/placeholder.svg?height=40&width=40"
+						src="/avatar.png"
 						alt="User"
 						width={24}
 						height={24}
