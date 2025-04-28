@@ -20,6 +20,7 @@ import MoodStep from "./_components/assessment/mood-step";
 import StressLevelStep from "./_components/assessment/stress-level-step";
 import SelfDescriptionStep from "./_components/assessment/self-description-step";
 import SleepQualityStep from "./_components/assessment/sleep-quality-step";
+import { createUser } from "./actions";
 
 type StepData = WelcomeStepData | RegularStepData;
 
@@ -81,14 +82,14 @@ export default function Home() {
 		try {
 			console.log("Saving user data:", assessmentData);
 
-			// In a real app, you would use a server action or API route to save the data
-			// For example:
-			// await createUser(assessmentData);
+			// Use the server action to create the user
+			await createUser(assessmentData);
 
 			// Navigate to dashboard
 			router.push("/dashboard");
 		} catch (error) {
 			console.error("Error saving user data:", error);
+			// You might want to show an error notification here
 		}
 	};
 
