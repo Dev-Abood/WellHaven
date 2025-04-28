@@ -6,7 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { ClerkProvider } from "@clerk/nextjs";
 
-const inter = Inter({ subsets: ["latin"] });
+// const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
 	title: "WellHaven - Mental Health & Wellness",
@@ -21,7 +21,7 @@ export default function RootLayout({
 	return (
 		<ClerkProvider>
 			<html lang="en" suppressHydrationWarning>
-				<body className={inter.className}>
+				<body>
 					{/* This has no effect right now, might remove later*/}
 					<ThemeProvider
 						attribute="class"
