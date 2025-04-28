@@ -1,4 +1,4 @@
-const { OpenAIClient } = require("@azure/openai");
+const { AzureOpenAI } = require("openai");  
 
 // Create a client instance to use across the application
 export const getOpenAIClient = () => {
@@ -6,7 +6,7 @@ export const getOpenAIClient = () => {
 	const endpoint = process.env.AZURE_OPENAI_ENDPOINT;
 	const apiVersion = "2025-01-01-preview";
 	const deployment = "gpt-35-turbo"; // This must match your deployment name
-	return new OpenAIClient({
+	return new AzureOpenAI({
 		endpoint,
 		apiKey,
 		apiVersion,
