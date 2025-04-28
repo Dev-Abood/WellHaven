@@ -1,7 +1,11 @@
-const { AzureOpenAI } = require("openai");
+const { AzureOpenAI } = require("openai");  
 
 // Create a client instance to use across the application
-const getOpenAIClient = () => {
+export const getOpenAIClient = () => {
+	const apiKey = process.env.AZURE_OPENAI_API_KEY;
+	const endpoint = process.env.AZURE_OPENAI_ENDPOINT;
+	const apiVersion = "2025-01-01-preview";
+	const deployment = "gpt-35-turbo"; // This must match your deployment name
 	return new AzureOpenAI({
 		endpoint,
 		apiKey,
@@ -11,7 +15,7 @@ const getOpenAIClient = () => {
 };
 
 // Generate a response from Azure OpenAI
-async function generateChatResponse(
+export async function generateChatResponse(
 	messages: { role: string; content: string }[],
 ) {
 	try {
@@ -32,5 +36,3 @@ async function generateChatResponse(
 		throw error;
 	}
 }
-
-generateChatResponse([{ role: "user", content: "Hello, how are you?" }]);
