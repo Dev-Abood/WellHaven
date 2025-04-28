@@ -1,13 +1,14 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, Suspense } from "react";
 import { Send } from "lucide-react";
 import ChatMessage from "./components/chat-message";
 import ChatHeader from "./components/chat-header";
 import Sidebar from "./components/sidebar";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function Home() {
+// Create a separate component for the part that uses useSearchParams
+function ChatContent() {
 	const [messages, setMessages] = useState<any[]>([]);
 	const [input, setInput] = useState("");
 	const [isTyping, setIsTyping] = useState(false);
@@ -126,73 +127,81 @@ export default function Home() {
 	};
 
 	return (
-		<main className="flex min-h-screen bg-zinc-900">
-			<div className="flex w-full mx-auto bg-zinc-800 overflow-hidden">
-				{/* Sidebar */}
-				<Sidebar
-					activeChatId={activeChatId}
-					onChatSelect={fetchChatSession}
-					onNewChat={handleNewChat}
-				/>
+		<div className="flex w-full mx-auto bg-zinc-800 overflow-hidden">
+			{/* Sidebar */}
+			<Sidebar
+				activeChatId={activeChatId}
+				onChatSelect={fetchChatSession}
+				onNewChat={handleNewChat}
+			/>
 
-				{/* Chat Area */}
-				<div className="flex-1 flex flex-col bg-white">
-					<ChatHeader />
+			{/* Chat Area */}
+			<div className="flex-1 flex flex-col bg-white">
+				<ChatHeader />
 
-					<div className="flex-1 overflow-y-auto p-6">
-						<div className="space-y-6 max-w-3xl mx-auto">
-							{messages.length === 0 ? (
-								<div className="text-center p-8 text-zinc-500">
-									<p>Start a new conversation with WellHaven's AI therapist</p>
-								</div>
-							) : (
-								messages.map((message) => (
-									<ChatMessage key={message.id} message={message} />
-								))
-							)}
-							{isTyping && (
-								<div className="flex items-center text-sm text-gray-500 ml-12">
-									<div className="w-2 h-2 bg-gray-400 rounded-full mr-1 animate-bounce"></div>
-									<div
-										className="w-2 h-2 bg-gray-400 rounded-full mr-1 animate-bounce"
-										style={{ animationDelay: "0.2s" }}
-									></div>
-									<div
-										className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-										style={{ animationDelay: "0.4s" }}
-									></div>
-								</div>
-							)}
-							<div ref={messagesEndRef} />
-						</div>
-					</div>
-
-					<div className="p-4 border-t bg-white">
-						<form
-							onSubmit={handleSubmit}
-							className="flex items-center max-w-3xl mx-auto"
-						>
-							<input
-								type="text"
-								value={input}
-								onChange={(e) => setInput(e.target.value)}
-								placeholder="Send a message..."
-								className="flex-1 p-4 rounded-full border border-orange-200 focus:outline-none focus:ring-2 focus:ring-orange-300"
-								disabled={isTyping}
-							/>
-							<button
-								type="submit"
-								className={`ml-3 p-3 rounded-full bg-orange-100 text-orange-500 hover:bg-orange-200 transition-colors ${
-									isTyping ? "opacity-50 cursor-not-allowed" : ""
-								}`}
-								disabled={isTyping}
-							>
-								<Send size={20} />
-							</button>
-						</form>
+				<div className="flex-1 overflow-y-auto p-6">
+					<div className="space-y-6 max-w-3xl mx-auto">
+						{messages.length === 0 ? (
+							<div className="text-center p-8 text-zinc-500">
+								<p>Start a new conversation with WellHaven's AI therapist</p>
+							</div>
+						) : (
+							messages.map((message) => (
+								<ChatMessage key={message.id} message={message} />
+							))
+						)}
+						{isTyping && (
+							<div className="flex items-center text-sm text-gray-500 ml-12">
+								<div className="w-2 h-2 bg-gray-400 rounded-full mr-1 animate-bounce"></div>
+								<div
+									className="w-2 h-2 bg-gray-400 rounded-full mr-1 animate-bounce"
+									style={{ animationDelay: "0.2s" }}
+								></div>
+								<div
+									className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+									style={{ animationDelay: "0.4s" }}
+								></div>
+							</div>
+						)}
+						<div ref={messagesEndRef} />
 					</div>
 				</div>
+
+				<div className="p-4 border-t bg-white">
+					<form
+						onSubmit={handleSubmit}
+						className="flex items-center max-w-3xl mx-auto"
+					>
+						<input
+							type="text"
+							value={input}
+							onChange={(e) => setInput(e.target.value)}
+							placeholder="Send a message..."
+							className="flex-1 p-4 rounded-full border border-orange-200 focus:outline-none focus:ring-2 focus:ring-orange-300"
+							disabled={isTyping}
+						/>
+						<button
+							type="submit"
+							className={`ml-3 p-3 rounded-full bg-orange-100 text-orange-500 hover:bg-orange-200 transition-colors ${
+								isTyping ? "opacity-50 cursor-not-allowed" : ""
+							}`}
+							disabled={isTyping}
+						>
+							<Send size={20} />
+						</button>
+					</form>
+				</div>
 			</div>
+		</div>
+	);
+}
+
+export default function Home() {
+	return (
+		<main className="flex min-h-screen bg-zinc-900">
+			<Suspense fallback={<div>Loading...</div>}>
+				<ChatContent />
+			</Suspense>
 		</main>
 	);
 }
