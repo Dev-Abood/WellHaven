@@ -95,7 +95,7 @@ model ChatMessage {
 
 model DailyMood {
   id            String       @id @default(auto()) @map("_id") @db.ObjectId
-  date          DateTime     @unique // Only one record per day
+  date          DateTime     
   mood          Mood
   sleepQuality  SleepQuality
   createdAt     DateTime     @default(now())
