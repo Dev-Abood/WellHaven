@@ -1,5 +1,3 @@
-"use client";
-
 import {
 	Brain,
 	Home,
@@ -7,6 +5,7 @@ import {
 	PenSquare,
 	Settings,
 	SmilePlus,
+	Book,
 } from "lucide-react";
 import {
 	Sidebar,
@@ -15,42 +14,26 @@ import {
 	SidebarGroup,
 	SidebarGroupContent,
 	SidebarGroupLabel,
-	SidebarHeader,
 	SidebarMenu,
 	SidebarMenuButton,
 	SidebarMenuItem,
 	SidebarRail,
 	SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 
 export function AppSidebar() {
 	const menuItems = [
-		{ title: "Dashboard", icon: Home, url: "/", isActive: true },
+		{ title: "Dashboard", icon: Home, url: "/dashboard", isActive: true },
 		{ title: "AI Therapy", icon: Brain, url: "/therapy" },
 		{ title: "Journaling", icon: PenSquare, url: "/journal" },
-		{ title: "Mood", icon: SmilePlus, url: "dashboard/mood" },
-		{ title: "Summary", icon: LineChart, url: "/summary" },
-		{ title: "Settings", icon: Settings, url: "/settings" },
+		{ title: "Mood", icon: SmilePlus, url: "/dashboard/mood" },
+		{ title: "Summary", icon: LineChart, url: "/dashboard/summary" },
+		{ title: "Resources", icon: Book, url: "/dashboard/resources" },
+		{ title: "Settings", icon: Settings, url: "/dashboard/settings" },
 	];
 
 	return (
 		<Sidebar>
-			<SidebarHeader className="p-4">
-				<div className="flex flex-col items-center gap-2 py-4">
-					<Avatar className="h-16 w-16 border-2 border-sidebar-border">
-						<AvatarImage src="/placeholder.svg?height=64&width=64" alt="User" />
-						<AvatarFallback>U</AvatarFallback>
-					</Avatar>
-					<div className="flex flex-col items-center text-center">
-						<span className="text-sm font-medium">Alex Johnson</span>
-					</div>
-					<Button variant="outline" size="sm" className="mt-2 w-full">
-						View Profile
-					</Button>
-				</div>
-			</SidebarHeader>
 			<SidebarContent>
 				<SidebarGroup>
 					<SidebarGroupLabel>Navigation</SidebarGroupLabel>

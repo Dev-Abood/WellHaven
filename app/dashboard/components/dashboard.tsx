@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,17 +13,60 @@ import {
 	TrendingUp,
 	LineChart,
 } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
-export function Dashboard() {
-	const [currentMood, setCurrentMood] = useState<string>("Happy");
+export function Dashboard({ userData }) {
+	const router = useRouter();
 
-	const moods = ["Sad", "Happy", "Neutral"];
+	// Helper function to get mood color for header background
+	const getMoodColor = (mood) => {
+		const moodColors = {
+			SAD: "from-red-800 to-red-700",
+			DEPRESSED: "from-gray-800 to-gray-700",
+			NEUTRAL: "from-amber-800 to-amber-700",
+			HAPPY: "from-green-800 to-green-700",
+			OVERJOYED: "from-emerald-800 to-emerald-700",
+		};
+		return moodColors[mood] || "from-amber-800 to-amber-700";
+	};
+
+	// Helper function to get stress level text
+	const getStressLevelText = (level) => {
+		const stressLevels = {
+			1: "Very Low (Peaceful)",
+			2: "Low (Relaxed)",
+			3: "Moderate",
+			4: "High (Stressed)",
+			5: "Very High (Overwhelmed)",
+		};
+		return stressLevels[level] || "Moderate";
+	};
+
+	// Helper function to format sleep quality text
+	const formatSleepQuality = (quality) => {
+		const sleepQualityText = {
+			WORST: "Very Poor (~3hr Avg)",
+			POOR: "Poor (~4hr Avg)",
+			FAIR: "Fair (~5-6hr Avg)",
+			GOOD: "Good (~7hr Avg)",
+			EXCELLENT: "Excellent (8hr+ Avg)",
+		};
+		return sleepQualityText[quality] || "Fair (~5-6hr Avg)";
+	};
+
+	// Format the mood for display (capitalize first letter, lowercase rest)
+	const formatMood = (mood) => {
+		return mood.charAt(0) + mood.slice(1).toLowerCase();
+	};
 
 	return (
 		<div className="max-w-7xl mx-auto">
 			<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 				<div className="lg:col-span-3">
-					<Card className="mb-6 overflow-hidden bg-gradient-to-b from-amber-800 to-amber-700 text-white">
+					<Card
+						className={`mb-6 overflow-hidden bg-gradient-to-b ${getMoodColor(userData.currentMood)} text-white`}
+					>
 						<CardContent className="p-6">
 							<div className="flex items-center gap-4">
 								<div className="relative">
@@ -40,7 +82,7 @@ export function Dashboard() {
 											variant="outline"
 											className="bg-amber-600/30 text-white border-amber-500"
 										>
-											{currentMood}
+											{formatMood(userData.currentMood)}
 										</Badge>
 									</div>
 									<div className="flex items-center text-sm text-amber-100 mt-1">
@@ -89,7 +131,7 @@ export function Dashboard() {
 								<div>
 									<h3 className="font-medium">Stress Level</h3>
 									<p className="text-sm text-muted-foreground">
-										Level 2 (Relaxed)
+										{getStressLevelText(userData.stressLevel)}
 									</p>
 								</div>
 							</CardContent>
@@ -120,7 +162,7 @@ export function Dashboard() {
 								<div>
 									<h3 className="font-medium">Sleep Quality</h3>
 									<p className="text-sm text-muted-foreground">
-										Insomniac (~3hr Avg)
+										{formatSleepQuality(userData.sleepQuality)}
 									</p>
 								</div>
 							</CardContent>
@@ -129,48 +171,41 @@ export function Dashboard() {
 
 					<Card className="mt-4">
 						<CardContent className="p-4">
-							<div className="flex items-center gap-4">
-								<div className="flex items-center justify-center w-12 h-12 rounded-full bg-yellow-100">
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										width="24"
-										height="24"
-										viewBox="0 0 24 24"
-										fill="none"
-										stroke="currentColor"
-										strokeWidth="2"
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										className="text-yellow-600"
-									>
-										<circle cx="12" cy="12" r="10" />
-										<path d="M8 14s1.5 2 4 2 4-2 4-2" />
-										<line x1="9" y1="9" x2="9.01" y2="9" />
-										<line x1="15" y1="9" x2="15.01" y2="9" />
-									</svg>
-								</div>
-								<div className="flex-1">
-									<h3 className="font-medium">Mood Tracker</h3>
-									<div className="flex gap-2 mt-2">
-										{moods.map((mood) => (
-											<Button
-												key={mood}
-												variant={currentMood === mood ? "default" : "outline"}
-												size="sm"
-												className={`rounded-full ${
-													mood === "Sad"
-														? "bg-red-100 text-red-600 hover:bg-red-200"
-														: mood === "Happy"
-															? "bg-green-100 text-green-600 hover:bg-green-200"
-															: "bg-stone-100 text-stone-600 hover:bg-stone-200"
-												} ${currentMood === mood ? "border-2 border-black/10" : ""}`}
-												onClick={() => setCurrentMood(mood)}
-											>
-												{mood}
-											</Button>
-										))}
+							<div className="flex justify-between items-center">
+								<div className="flex items-center gap-4">
+									<div className="flex items-center justify-center w-12 h-12 rounded-full bg-yellow-100">
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											width="24"
+											height="24"
+											viewBox="0 0 24 24"
+											fill="none"
+											stroke="currentColor"
+											strokeWidth="2"
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											className="text-yellow-600"
+										>
+											<circle cx="12" cy="12" r="10" />
+											<path d="M8 14s1.5 2 4 2 4-2 4-2" />
+											<line x1="9" y1="9" x2="9.01" y2="9" />
+											<line x1="15" y1="9" x2="15.01" y2="9" />
+										</svg>
+									</div>
+									<div>
+										<h3 className="font-medium">Current Mood</h3>
+										<p className="text-sm text-muted-foreground">
+											{formatMood(userData.currentMood)}
+										</p>
 									</div>
 								</div>
+								<Button
+									variant="outline"
+									size="sm"
+									onClick={() => router.push("/dashboard/mood")}
+								>
+									Update Mood
+								</Button>
 							</div>
 						</CardContent>
 					</Card>
@@ -180,17 +215,51 @@ export function Dashboard() {
 					<h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
 					<Card className="mb-4">
 						<CardContent className="p-4 space-y-3">
-							<Button variant="outline" className="w-full justify-start">
-								<Plus className="mr-2 h-4 w-4" />
-								New Journal Entry
+							<Button
+								variant="outline"
+								className="w-full justify-start"
+								asChild
+							>
+								<Link href="/journal">
+									<Plus className="mr-2 h-4 w-4" />
+									New Journal Entry
+								</Link>
 							</Button>
-							<Button variant="outline" className="w-full justify-start">
-								<MessageSquare className="mr-2 h-4 w-4" />
-								Start AI Therapy Session
+							<Button
+								variant="outline"
+								className="w-full justify-start"
+								asChild
+							>
+								<Link href="/therapy">
+									<MessageSquare className="mr-2 h-4 w-4" />
+									Start AI Therapy Session
+								</Link>
 							</Button>
-							<Button variant="outline" className="w-full justify-start">
-								<CalendarDays className="mr-2 h-4 w-4" />
-								Schedule Reminder
+							<Button
+								variant="outline"
+								className="w-full justify-start"
+								asChild
+							>
+								<Link href="/dashboard/mood">
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="16"
+										height="16"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										strokeWidth="2"
+										strokeLinecap="round"
+										strokeLinejoin="round"
+										className="mr-2 h-4 w-4"
+									>
+										<circle cx="12" cy="12" r="10" />
+										<path d="M8 14s1.5 2 4 2 4-2 4-2" />
+										<line x1="9" y1="9" x2="9.01" y2="9" />
+										<line x1="15" y1="9" x2="15.01" y2="9" />
+									</svg>
+									Track Daily Mood
+								</Link>
 							</Button>
 						</CardContent>
 					</Card>
@@ -234,11 +303,15 @@ export function Dashboard() {
 							<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 								<div className="flex items-center">
 									<div className="flex-1">
-										<h3 className="text-3xl font-bold">2,541</h3>
-										<p className="text-muted-foreground">Conversations</p>
+										<h3 className="text-3xl font-bold">
+											{userData.journalCount}
+										</h3>
+										<p className="text-muted-foreground">Journal Entries</p>
 										<div className="flex items-center mt-2 text-sm text-muted-foreground">
 											<MessageSquare className="h-4 w-4 mr-1" />
-											<span>Journal entries this month</span>
+											<span>
+												{userData.currentMonthJournals} entries this month
+											</span>
 										</div>
 									</div>
 								</div>
@@ -246,8 +319,20 @@ export function Dashboard() {
 								<div className="flex flex-col gap-2">
 									<div className="flex justify-between items-center">
 										<span className="text-sm font-medium">Mood Trend</span>
-										<span className="text-xs text-green-600 flex items-center">
-											<TrendingUp className="h-3 w-3 mr-1" /> +12%
+										<span
+											className={`text-xs ${
+												userData.moodTrend.isPositive
+													? "text-green-600"
+													: "text-red-600"
+											} flex items-center`}
+										>
+											<TrendingUp
+												className={`h-3 w-3 mr-1 ${
+													!userData.moodTrend.isPositive ? "rotate-180" : ""
+												}`}
+											/>
+											{userData.moodTrend.isPositive ? "+" : "-"}
+											{userData.moodTrend.percentage}%
 										</span>
 									</div>
 									<div className="h-12 bg-gray-100 rounded-md relative overflow-hidden">
@@ -270,8 +355,20 @@ export function Dashboard() {
 								<div className="flex flex-col gap-2">
 									<div className="flex justify-between items-center">
 										<span className="text-sm font-medium">Sleep Quality</span>
-										<span className="text-xs text-red-600 flex items-center">
-											<TrendingUp className="h-3 w-3 mr-1 rotate-180" /> -8%
+										<span
+											className={`text-xs ${
+												userData.sleepTrend.isPositive
+													? "text-green-600"
+													: "text-red-600"
+											} flex items-center`}
+										>
+											<TrendingUp
+												className={`h-3 w-3 mr-1 ${
+													!userData.sleepTrend.isPositive ? "rotate-180" : ""
+												}`}
+											/>
+											{userData.sleepTrend.isPositive ? "+" : "-"}
+											{userData.sleepTrend.percentage}%
 										</span>
 									</div>
 									<div className="h-12 bg-gray-100 rounded-md relative overflow-hidden">
