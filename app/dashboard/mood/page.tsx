@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 
 export default async function MoodPage() {
-	/* const { userId } = await auth();
+	const { userId } = await auth();
 	if (!userId) {
 		redirect("/sign-in");
 	}
@@ -16,7 +16,7 @@ export default async function MoodPage() {
 		},
 	});
 
-	console.log("Daily Moods", dailyMoods); */
+	console.log("Daily Moods", dailyMoods);
 
 	return (
 		<main className="flex min-h-screen bg-gray-50">
