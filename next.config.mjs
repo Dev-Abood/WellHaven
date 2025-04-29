@@ -11,11 +11,6 @@ const nextConfig = {
 	},
 };
 
-module.exports = {
-	output: "standalone",  // Required for Azure
-	server: {
-	  port: 8080,  // Explicit port setting
-	},
-  };
+
 
 export default nextConfig;
