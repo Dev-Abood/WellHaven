@@ -75,12 +75,61 @@ export default function Home() {
 					</nav>
 
 					<div className="flex items-center gap-4">
-							<SignedOut>
-					<SignInButton />
-					</SignedOut>
-					<SignedIn>
-					<UserButton />
-					</SignedIn>
+						<SignedOut>
+							<div className="hidden sm:flex gap-2">
+								<SignInButton mode="modal">
+									<Button
+										variant="outline"
+										className="border-slate-200 text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+									>
+										Sign In
+									</Button>
+								</SignInButton>
+								<Button
+									asChild
+									className="bg-blue-600 hover:bg-blue-700 text-white"
+								>
+									<Link href="/sign-up">Get Started</Link>
+								</Button>
+							</div>
+							<SignInButton mode="modal">
+								<Button className="sm:hidden bg-blue-600 hover:bg-blue-700 text-white">
+									Sign In
+								</Button>
+							</SignInButton>
+						</SignedOut>
+						<SignedIn>
+							<Button
+								asChild
+								className="bg-blue-600 hover:bg-blue-700 text-white mr-2"
+							>
+								<Link href="/dashboard">Dashboard</Link>
+							</Button>
+							<UserButton />
+						</SignedIn>
+						<Button
+							variant="ghost"
+							size="icon"
+							className="md:hidden text-slate-700"
+						>
+							<span className="sr-only">Toggle menu</span>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="24"
+								height="24"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="2"
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								className="h-6 w-6"
+							>
+								<line x1="4" x2="20" y1="12" y2="12" />
+								<line x1="4" x2="20" y1="6" y2="6" />
+								<line x1="4" x2="20" y1="18" y2="18" />
+							</svg>
+						</Button>
 					</div>
 				</div>
 			</header>
