@@ -6,90 +6,65 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { MoodDialog } from "./mood-dialog";
+import { toast } from "sonner";
+import { createMood, deleteMood, updateMood } from "../../mood/actions";
+import { Mood, SleepQuality } from "@prisma/client";
 
-// Mood types and colors
-export type MoodType = "happy" | "neutral" | "overjoyed" | "sad" | "depressed";
+// Mood types and colors based on your schema
 
 export const moodColors: Record<string, string> = {
-	happy: "bg-yellow-300 hover:bg-yellow-400",
-	neutral: "bg-amber-200 hover:bg-amber-300",
-	overjoyed: "bg-green-300 hover:bg-green-400",
-	sad: "bg-red-300 hover:bg-red-400",
-	depressed: "bg-purple-300 hover:bg-purple-400",
+	HAPPY: "bg-yellow-300 hover:bg-yellow-400",
+	NEUTRAL: "bg-zinc-200 hover:bg-zinc-300",
+	OVERJOYED: "bg-green-300 hover:bg-green-400",
+	SAD: "bg-red-300 hover:bg-red-400",
+	DEPRESSED: "bg-purple-300 hover:bg-purple-400",
 };
 
 export const moodEmojis: Record<string, string> = {
-	happy: "😊",
-	neutral: "😐",
-	overjoyed: "😄",
-	sad: "😔",
-	depressed: "😞",
+	HAPPY: "😊",
+	NEUTRAL: "😐",
+	OVERJOYED: "😄",
+	SAD: "😔",
+	DEPRESSED: "😞",
 };
 
 // Interface for mood data
 export interface MoodData {
-	mood: MoodType;
-	sleep: number;
-	date: string; // ISO date string format
+	id: string;
+	mood: Mood;
+	date: Date;
+	sleepQuality: SleepQuality;
 }
 
-// Mock data for the calendar
-const generateMockMoodData = () => {
-	const moods: MoodType[] = [
-		"happy",
-		"neutral",
-		"overjoyed",
-		"sad",
-		"depressed",
-	];
-	const today = new Date();
+// Props for the MoodCalendar component
+interface MoodCalendarProps {
+	dailyMoods: MoodData[];
+}
 
-	const mockData: Record<string, MoodData> = {};
-
-	// Generate data for past 3 months and next 3 months
-	for (let monthOffset = -3; monthOffset <= 3; monthOffset++) {
-		const currentYear =
-			today.getFullYear() + Math.floor((today.getMonth() + monthOffset) / 12);
-		const adjustedMonth = (((today.getMonth() + monthOffset) % 12) + 12) % 12; // Handle negative months
-
-		const daysInMonth = new Date(currentYear, adjustedMonth + 1, 0).getDate();
-
-		for (let day = 1; day <= daysInMonth; day++) {
-			// Only add data for past days and some random future days
-			const date = new Date(currentYear, adjustedMonth, day);
-			const isoDate = date.toISOString().split("T")[0];
-
-			if (date < today || Math.random() > 0.7) {
-				mockData[isoDate] = {
-					mood: moods[Math.floor(Math.random() * moods.length)],
-					sleep: Math.floor(Math.random() * 5) + 1,
-					date: isoDate,
-				};
-			}
-		}
-	}
-
-	return mockData;
-};
-
-export function MoodCalendar() {
+export function MoodCalendar({ dailyMoods }: MoodCalendarProps) {
 	const [visibleMonthsStart, setVisibleMonthsStart] = useState(new Date());
 	const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 	const [moodData, setMoodData] = useState<Record<string, MoodData>>({});
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [isLoading, setIsLoading] = useState(true);
+	const [isDeleting, setIsDeleting] = useState(false);
 
 	// Number of months to display
 	const numberOfMonthsToShow = 3;
 
-	// Load mock data
+	// Load initial data from props
 	useEffect(() => {
-		// Simulate API call
-		setTimeout(() => {
-			setMoodData(generateMockMoodData());
-			setIsLoading(false);
-		}, 500);
-	}, []);
+		const moodMap: Record<string, MoodData> = {};
+
+		// Convert dailyMoods array to a date-keyed object
+		dailyMoods.forEach((mood) => {
+			const isoDate = mood.date.toISOString().split("T")[0];
+			moodMap[isoDate] = mood;
+		});
+
+		setMoodData(moodMap);
+		setIsLoading(false);
+	}, [dailyMoods]);
 
 	// Navigate to previous months
 	const prevMonths = () => {
@@ -112,40 +87,114 @@ export function MoodCalendar() {
 	};
 
 	// Save mood data
-	const saveMoodData = (date: Date, mood: MoodType, sleep: number) => {
+	const saveMoodData = async (
+		date: Date,
+		mood: Mood,
+		sleepQuality: SleepQuality,
+	) => {
 		const isoDate = date.toISOString().split("T")[0];
+		const existingMood = moodData[isoDate];
 
-		const updatedData = {
-			...moodData,
-			[isoDate]: {
-				mood,
-				sleep,
-				date: isoDate,
-			},
-		};
+		try {
+			if (existingMood?.id) {
+				// Update existing mood
+				await updateMood({
+					id: existingMood.id,
+					mood,
+					sleepQuality,
+					date: new Date(date).toISOString(),
+				});
 
-		setMoodData(updatedData);
+				toast.success("Mood updated successfully");
+
+				// Update the local state
+				const updatedData = {
+					...moodData,
+					[isoDate]: {
+						id: existingMood.id,
+						mood,
+						sleepQuality,
+						date: new Date(date),
+					},
+				};
+
+				setMoodData(updatedData);
+			} else {
+				// Create new mood
+				const newMood = await createMood({
+					mood,
+					sleepQuality,
+					date: new Date(date).toISOString(),
+				});
+
+				toast.success("Mood recorded successfully");
+
+				// Update the local state
+				const updatedData = {
+					...moodData,
+					[isoDate]: {
+						id: newMood.id,
+						mood,
+						sleepQuality,
+						date: new Date(date),
+					},
+				};
+
+				setMoodData(updatedData);
+			}
+		} catch (error) {
+			toast.error("Failed to save mood");
+			console.error("Error saving mood:", error);
+		}
+
 		setIsDialogOpen(false);
+	};
 
-		console.log("Saving mood data:", {
-			date: isoDate,
-			mood,
-			sleep,
-		});
+	// Delete mood data
+	const handleDeleteMood = async () => {
+		if (!selectedDate) return;
 
-		// This is where you would send data to your backend
-		// Example:
-		// fetch('/api/mood', {
-		//   method: 'POST',
-		//   headers: { 'Content-Type': 'application/json' },
-		//   body: JSON.stringify({ date: isoDate, mood, sleep })
-		// })
+		const isoDate = selectedDate.toISOString().split("T")[0];
+		const existingMood = moodData[isoDate];
+
+		if (existingMood?.id) {
+			setIsDeleting(true);
+
+			try {
+				await deleteMood(existingMood.id);
+
+				// Remove from local state
+				const updatedData = { ...moodData };
+				delete updatedData[isoDate];
+				setMoodData(updatedData);
+
+				toast.success("Mood deleted successfully");
+			} catch (error) {
+				toast.error("Failed to delete mood");
+				console.error("Error deleting mood:", error);
+			} finally {
+				setIsDeleting(false);
+				setIsDialogOpen(false);
+			}
+		}
 	};
 
 	// Get mood for a specific date
 	const getMoodForDate = (date: Date) => {
 		const isoDate = date.toISOString().split("T")[0];
 		return moodData[isoDate]?.mood || null;
+	};
+
+	// Get sleep quality for a specific date
+	const getSleepQualityForDate = (date: Date): SleepQuality | null => {
+		const isoDate = date.toISOString().split("T")[0];
+		return moodData[isoDate]?.sleepQuality || null;
+	};
+
+	// Get mood data for a specific date
+	const getMoodDataForDate = (date: Date): MoodData | null => {
+		const isoDate = date.toISOString().split("T")[0];
+		return moodData[isoDate] || null;
 	};
 
 	// Generate months to display
@@ -198,7 +247,7 @@ export function MoodCalendar() {
 					<span className="text-sm">Happy</span>
 				</div>
 				<div className="flex items-center gap-2">
-					<div className="w-4 h-4 rounded-full bg-amber-200"></div>
+					<div className="w-4 h-4 rounded-full bg-zinc-200"></div>
 					<span className="text-sm">Neutral</span>
 				</div>
 				<div className="flex items-center gap-2">
@@ -220,11 +269,12 @@ export function MoodCalendar() {
 					isOpen={isDialogOpen}
 					onClose={() => setIsDialogOpen(false)}
 					date={selectedDate}
-					initialMood={getMoodForDate(selectedDate)}
-					initialSleep={
-						moodData[selectedDate.toISOString().split("T")[0]]?.sleep || 3
-					}
+					initialMood={(getMoodForDate(selectedDate) as Mood) || "NEUTRAL"}
+					initialSleep={getSleepQualityForDate(selectedDate) || "GOOD"}
 					onSave={saveMoodData}
+					onDelete={handleDeleteMood}
+					isDeleting={isDeleting}
+					isEditing={!!getMoodDataForDate(selectedDate)}
 				/>
 			)}
 		</div>
@@ -233,7 +283,7 @@ export function MoodCalendar() {
 
 interface MonthCalendarProps {
 	date: Date;
-	getMoodForDate: (date: Date) => MoodType;
+	getMoodForDate: (date: Date) => Mood | null;
 	onDayClick: (date: Date) => void;
 }
 
