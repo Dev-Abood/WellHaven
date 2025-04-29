@@ -43,7 +43,7 @@ const moodOptions = [
 	{ value: "happy", icon: "😃", color: "bg-yellow-200" },
 	{ value: "neutral", icon: "😐", color: "bg-neutral-200" },
 	{ value: "sad", icon: "😢", color: "bg-orange-200" },
-	{ value: "depressed", icon: "😠", color: "bg-purple-200" },
+	{ value: "depressed", icon: "😞", color: "bg-purple-200" },
 ];
 
 interface JournalFormProps {
