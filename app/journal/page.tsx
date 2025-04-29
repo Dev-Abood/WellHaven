@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { PlusCircle } from "lucide-react";
+import { ChevronLeft, PlusCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { auth } from "@clerk/nextjs/server";
@@ -34,6 +34,15 @@ const JournalPage = async () => {
 				</div>
 			</div>
 
+			<Button
+				asChild
+				size="icon"
+				className="ml-12 text-white bg-[#5a4a42] hover:bg-[#5a4a42]/90 rounded-full w-10 h-10 mb-4"
+			>
+				<Link href="/dashboard">
+					<ChevronLeft className="h-5 w-5" />
+				</Link>
+			</Button>
 			{/* Journal content */}
 			<div className="max-w-4xl mx-auto  px-4">
 				<div className="bg-white rounded-xl shadow-lg p-6">
