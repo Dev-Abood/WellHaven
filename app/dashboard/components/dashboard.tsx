@@ -15,13 +15,36 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Mood, SleepQuality } from "@prisma/client";
 
-export function Dashboard({ userData }) {
+// Define types for our data
+type StressLevelType = 1 | 2 | 3 | 4 | 5;
+
+interface TrendData {
+	percentage: number;
+	isPositive: boolean;
+}
+
+interface UserData {
+	currentMood: Mood;
+	sleepQuality: SleepQuality;
+	stressLevel: StressLevelType;
+	journalCount: number;
+	currentMonthJournals: number;
+	moodTrend: TrendData;
+	sleepTrend: TrendData;
+}
+
+interface DashboardProps {
+	userData: UserData;
+}
+
+export function Dashboard({ userData }: DashboardProps) {
 	const router = useRouter();
 
 	// Helper function to get mood color for header background
-	const getMoodColor = (mood) => {
-		const moodColors = {
+	const getMoodColor = (mood: Mood): string => {
+		const moodColors: Record<Mood, string> = {
 			SAD: "from-red-800 to-red-700",
 			DEPRESSED: "from-gray-800 to-gray-700",
 			NEUTRAL: "from-amber-800 to-amber-700",
@@ -32,8 +55,8 @@ export function Dashboard({ userData }) {
 	};
 
 	// Helper function to get stress level text
-	const getStressLevelText = (level) => {
-		const stressLevels = {
+	const getStressLevelText = (level: StressLevelType): string => {
+		const stressLevels: Record<StressLevelType, string> = {
 			1: "Very Low (Peaceful)",
 			2: "Low (Relaxed)",
 			3: "Moderate",
@@ -44,8 +67,8 @@ export function Dashboard({ userData }) {
 	};
 
 	// Helper function to format sleep quality text
-	const formatSleepQuality = (quality) => {
-		const sleepQualityText = {
+	const formatSleepQuality = (quality: SleepQuality): string => {
+		const sleepQualityText: Record<SleepQuality, string> = {
 			WORST: "Very Poor (~3hr Avg)",
 			POOR: "Poor (~4hr Avg)",
 			FAIR: "Fair (~5-6hr Avg)",
@@ -56,7 +79,7 @@ export function Dashboard({ userData }) {
 	};
 
 	// Format the mood for display (capitalize first letter, lowercase rest)
-	const formatMood = (mood) => {
+	const formatMood = (mood: Mood): string => {
 		return mood.charAt(0) + mood.slice(1).toLowerCase();
 	};
 

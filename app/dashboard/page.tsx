@@ -4,6 +4,26 @@ import { Dashboard } from "./components/dashboard";
 import { AppSidebar } from "./components/app-sidebar";
 import { prisma } from "@/lib/prisma";
 
+// Define types for DailyMood and Journal records
+type MoodType = "SAD" | "DEPRESSED" | "NEUTRAL" | "HAPPY" | "OVERJOYED";
+type SleepQualityType = "WORST" | "POOR" | "FAIR" | "GOOD" | "EXCELLENT";
+type StressLevelType = 1 | 2 | 3 | 4 | 5;
+
+interface TrendData {
+	percentage: number;
+	isPositive: boolean;
+}
+
+interface UserData {
+	currentMood: MoodType;
+	sleepQuality: SleepQualityType;
+	stressLevel: StressLevelType;
+	journalCount: number;
+	currentMonthJournals: number;
+	moodTrend: TrendData;
+	sleepTrend: TrendData;
+}
+
 export default async function Home() {
 	const { userId } = await auth();
 	if (!userId) {
@@ -95,8 +115,8 @@ export default async function Home() {
 	});
 
 	// Calculate trends
-	let moodTrend = { percentage: 0, isPositive: true };
-	let sleepTrend = { percentage: 0, isPositive: false };
+	let moodTrend: TrendData = { percentage: 0, isPositive: true };
+	let sleepTrend: TrendData = { percentage: 0, isPositive: false };
 
 	if (moodData.length > 0) {
 		// Split data into week segments
@@ -105,7 +125,7 @@ export default async function Home() {
 		const thisWeekMoods = moodData.slice(midpoint);
 
 		// Calculate mood scores - simple numeric mapping
-		const moodScores = {
+		const moodScores: Record<MoodType, number> = {
 			SAD: 1,
 			DEPRESSED: 1,
 			NEUTRAL: 3,
@@ -113,7 +133,7 @@ export default async function Home() {
 			OVERJOYED: 5,
 		};
 
-		const sleepScores = {
+		const sleepScores: Record<SleepQualityType, number> = {
 			WORST: 1,
 			POOR: 2,
 			FAIR: 3,
@@ -122,10 +142,14 @@ export default async function Home() {
 		};
 
 		// Calculate average mood scores
-		const calcAverage = (data: any, scoreMap: any, property: any) => {
+		const calcAverage = (
+			data: any[],
+			scoreMap: Record<string, number>,
+			property: string,
+		): number => {
 			if (data.length === 0) return 0;
 			const sum = data.reduce(
-				(acc: any, item: any) => acc + scoreMap[item[property]],
+				(acc, item) => acc + scoreMap[item[property] as keyof typeof scoreMap],
 				0,
 			);
 			return sum / data.length;
@@ -146,7 +170,7 @@ export default async function Home() {
 		);
 
 		// Calculate percentage changes
-		const calcPercentChange = (previous: number, current: number) => {
+		const calcPercentChange = (previous: number, current: number): number => {
 			if (previous === 0) return 0;
 			return Math.round(((current - previous) / previous) * 100);
 		};
@@ -176,11 +200,16 @@ export default async function Home() {
 	}
 
 	// Prepare the data to pass to Dashboard component
-	const userData = {
-		currentMood: latestDailyMood?.mood || user.initialMood || "NEUTRAL",
-		sleepQuality:
-			latestDailyMood?.sleepQuality || user.initialSleepQuality || "FAIR",
-		stressLevel: latestJournal?.stressLevel || user.initialStressLevel || 3,
+	const userData: UserData = {
+		currentMood: (latestDailyMood?.mood ||
+			user.initialMood ||
+			"NEUTRAL") as MoodType,
+		sleepQuality: (latestDailyMood?.sleepQuality ||
+			user.initialSleepQuality ||
+			"FAIR") as SleepQualityType,
+		stressLevel: (latestJournal?.stressLevel ||
+			user.initialStressLevel ||
+			3) as StressLevelType,
 		journalCount,
 		currentMonthJournals,
 		moodTrend,
